@@ -1,0 +1,226 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Tab {
+    char url[100];
+    struct Tab *prev;
+    struct Tab *next;
+};
+
+struct Tab *head = NULL;
+struct Tab *current = NULL;
+
+// Open Tab
+void openTab(char url[]) {
+    struct Tab *newTab = malloc(sizeof(struct Tab));
+    strcpy(newTab->url, url);
+    newTab->prev = NULL;
+    newTab->next = NULL;
+
+    if (head == NULL) {
+        head = current = newTab;
+    } else {
+        current->next = newTab;
+        newTab->prev = current;
+        current = newTab;
+    }
+
+    printf("\nOpened: %s\n", url);
+}
+
+// Show Tabs
+void showTabs() {
+    struct Tab *temp = head;
+    int i = 1;
+
+    if (head == NULL) {
+        printf("\nNo tabs available\n");
+        return;
+    }
+
+    printf("\n--- Open Tabs ---\n");
+    while (temp != NULL) {
+        printf("%d. %s", i, temp->url);
+        if (temp == current)
+            printf("  <-- Current");
+        printf("\n");
+        temp = temp->next;
+        i++;
+    }
+}
+
+// Delete Tab
+void deleteTab(int pos) {
+    struct Tab *temp = head;
+    int i = 1;
+
+    if (head == NULL) {
+        printf("\nNo tabs available\n");
+        return;
+    }
+
+    while (temp != NULL && i < pos) {
+        temp = temp->next;
+        i++;
+    }
+
+    if (temp == NULL) {
+        printf("\nInvalid position\n");
+        return;
+    }
+
+    printf("\nDeleted: %s\n", temp->url);
+
+    if (temp == head)
+        head = temp->next;
+
+    if (temp->next)
+        temp->next->prev = temp->prev;
+
+    if (temp->prev)
+        temp->prev->next = temp->next;
+
+    if (temp == current)
+        current = temp->next ? temp->next : temp->prev;
+
+    free(temp);
+}
+
+// Next Tab
+void nextTab() {
+    if (current && current->next) {
+        current = current->next;
+        printf("\nSwitched to: %s\n", current->url);
+    } else {
+        printf("\nNo next tab available\n");
+    }
+}
+
+// Previous Tab
+void prevTab() {
+    if (current && current->prev) {
+        current = current->prev;
+        printf("\nSwitched to: %s\n", current->url);
+    } else {
+        printf("\nNo previous tab available\n");
+    }
+}
+
+// Close Current
+void closeCurrent() {
+    if (current == NULL) {
+        printf("\nNo tab open\n");
+        return;
+    }
+
+    struct Tab *temp = current;
+    printf("\nClosed: %s\n", temp->url);
+
+    if (temp == head)
+        head = temp->next;
+
+    if (temp->next)
+        temp->next->prev = temp->prev;
+
+    if (temp->prev)
+        temp->prev->next = temp->next;
+
+    current = temp->next ? temp->next : temp->prev;
+
+    free(temp);
+}
+
+// Count Tabs
+void countTabs() {
+    int count = 0;
+    struct Tab *temp = head;
+
+    while (temp) {
+        count++;
+        temp = temp->next;
+    }
+
+    printf("\nTotal tabs: %d\n", count);
+}
+
+// Delete All Tabs
+void deleteAll() {
+    struct Tab *temp;
+
+    while (head) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+
+    current = NULL;
+    printf("\nAll tabs closed\n");
+}
+
+int main() {
+    int choice, pos;
+    char url[100];
+
+    while (1) {
+        printf("\n===== Browser Menu =====\n");
+        printf("1. Open Tab\n");
+        printf("2. Show Tabs\n");
+        printf("3. Delete Tab by Position\n");
+        printf("4. Next Tab\n");
+        printf("5. Previous Tab\n");
+        printf("6. Close Current Tab\n");
+        printf("7. Count Tabs\n");
+        printf("8. Delete All Tabs\n");
+        printf("9. Exit\n");
+        printf("Enter choice: ");
+
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter URL: ");
+                scanf("%s", url);
+                openTab(url);
+                break;
+
+            case 2:
+                showTabs();
+                break;
+
+            case 3:
+                showTabs();
+                printf("Enter position: ");
+                scanf("%d", &pos);
+                deleteTab(pos);
+                break;
+
+            case 4:
+                nextTab();
+                break;
+
+            case 5:
+                prevTab();
+                break;
+
+            case 6:
+                closeCurrent();
+                break;
+
+            case 7:
+                countTabs();
+                break;
+
+            case 8:
+                deleteAll();
+                break;
+
+            case 9:
+                deleteAll();
+                return 0;
+
+            default:
+                printf("\nInvalid choice\n");
+        }
+    }
+}
